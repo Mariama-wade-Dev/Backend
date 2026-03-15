@@ -2,7 +2,6 @@ from django.dispatch import receiver
 from django.core.mail import send_mail
 from django.conf import settings 
 from django_rest_passwordreset.signals import reset_password_token_created
-
 from django.db.models.signals import post_save
 from django.contrib.auth.models import User
 
@@ -21,14 +20,14 @@ def send_welcome_email(sender, instance, created, **kwargs):
         send_mail(
             subject,
             message,
-            settings.EMAIL_HOST_USER,
+            settings.DEFAULT_FROM_EMAIL, # Utilise DEFAULT_FROM_EMAIL pour plus de sécurité
             [instance.email],
-            fail_silently=False,
+            fail_silently=True,  # <--- CHANGÉ : L'inscription ne plantera plus jamais
         )
 
 @receiver(reset_password_token_created)
 def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
-    # REMPLACE PAR TON URL VERCEL
+    # Ton URL Vercel est correcte
     frontend_url = "https://produit-frontend-mariama-wade-devs-projects.vercel.app"
     reset_url = f"{frontend_url}/reset-password?token={reset_password_token.key}"
 
@@ -39,12 +38,11 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
     Utilisez le code suivant : {reset_password_token.key}
     Ou cliquez sur ce lien : {reset_url}
     """
-    # ... reste du code send_mail
 
     send_mail(
         "Réinitialisation de mot de passe - Red Product",
         message,
-        settings.EMAIL_HOST_USER,  
+        settings.DEFAULT_FROM_EMAIL,
         [reset_password_token.user.email],
-        fail_silently=False,
+        fail_silently=True,  # <--- CHANGÉ : Si Brevo est lent, l'utilisateur voit quand même le message de succès
     )
