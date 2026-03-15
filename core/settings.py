@@ -135,4 +135,6 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
+EMAIL_TIMEOUT = 5  # Si Brevo ne répond pas en 5s, on abandonne l'envoi du mail
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
