@@ -28,8 +28,9 @@ def send_welcome_email(sender, instance, created, **kwargs):
 
 @receiver(reset_password_token_created)
 def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
-    # Lien qui pointe vers ta page React
-    reset_url = f"http://localhost:3000/reset-password?token={reset_password_token.key}"
+    # REMPLACE PAR TON URL VERCEL
+    frontend_url = "https://produit-frontend-mariama-wade-devs-projects.vercel.app"
+    reset_url = f"{frontend_url}/reset-password?token={reset_password_token.key}"
 
     message = f"""
     Bonjour,
@@ -38,6 +39,7 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
     Utilisez le code suivant : {reset_password_token.key}
     Ou cliquez sur ce lien : {reset_url}
     """
+    # ... reste du code send_mail
 
     send_mail(
         "Réinitialisation de mot de passe - Red Product",
