@@ -1,1 +1,1 @@
-web: gunicorn BACKEND
+web: gunicorn core.wsgi
