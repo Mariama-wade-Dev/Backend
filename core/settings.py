@@ -82,20 +82,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'core.wsgi.application'
-
-# --- CONFIGURATION EMAIL SÉCURISÉE (BREVO) ---
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp-relay.brevo.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-
-# Récupération sécurisée des variables depuis Render
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
-
-# Sécurité anti-crash
-EMAIL_FAIL_SILENTLY = True 
-DEFAULT_FROM_EMAIL = f"BACKEND <{os.getenv('EMAIL_HOST_USER')}>"
+# Au lieu de la config Brevo, utilise la console pour tester
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # --- BASE DE DONNÉES ---
 DATABASES = {
