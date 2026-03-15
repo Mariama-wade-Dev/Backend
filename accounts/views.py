@@ -1,24 +1,43 @@
-# from django.shortcuts import render
-
-# # Create your views here.
-
-
-
-
-
-from rest_framework import generics
+from rest_framework import generics, status
 from django.contrib.auth.models import User
-from .serializers import UserSerializer, MyTokenObtainPairSerializer # Importe le nouveau serializer
+from .serializers import UserSerializer, MyTokenObtainPairSerializer
 from rest_framework.permissions import AllowAny
-from rest_framework_simplejwt.views import TokenObtainPairView # Importe la vue JWT
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-# Vue pour l'inscription (déjà existante, on la garde)
-class RegisterView(generics.CreateAPIView):
-    queryset = User.objects.all()
-    permission_classes = (AllowAny,)
-    serializer_class = UserSerializer
-
-# Nouvelle vue pour la connexion (Login)
+# 1. Vue pour la connexion (Login) - OK
 class MyTokenObtainPairView(TokenObtainPairView):
     permission_classes = (AllowAny,)
-    serializer_class = MyTokenObtainPairSerializer # Utilise notre serializer personnalisé
+    serializer_class = MyTokenObtainPairSerializer
+
+# 2. Vue pour l'inscription (Register) - VERSION CORRIGÉE
+class RegisterView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request):
+        # On récupère les données envoyées par React
+        username = request.data.get('username')
+        email = request.data.get('email')
+        password = request.data.get('password')
+
+        # Sécurité : on vérifie que RIEN n'est vide avant de créer
+        if not username or not email or not password:
+            return Response(
+                {"error": "Veuillez remplir tous les champs (username, email, password)"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if User.objects.filter(username=username).exists():
+            return Response({"error": "Cet utilisateur existe déjà"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Création sécurisée
+        try:
+            user = User.objects.create_user(username=username, email=email, password=password)
+            return Response({
+                "message": "Utilisateur créé avec succès !",
+                "user": {"username": user.username, "email": user.email}
+            }, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

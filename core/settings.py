@@ -10,12 +10,12 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure--%lwhhg#9)m78wpsyhn-e+m32vln34vwq#*8r5pxy$nhm$03%+'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure--%lwhhg#9)m78wpsyhn-e+m32vln34vwq#*8r5pxy$nhm$03%+')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.vercel.app', '.render.com']
 
 # Application definition
 INSTALLED_APPS = [
@@ -24,21 +24,28 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+   
+
+    #CLOUDINARY STORAGE 
+    'cloudinary_storage',
     'django.contrib.staticfiles',
+    'cloudinary',
     
     # Librairies tierces
     'corsheaders',
     'rest_framework',
     'rest_framework_simplejwt',
-    'django_rest_passwordreset', # Pour le forgot password
+    'django_rest_passwordreset', 
     
     # Tes applications
     'accounts', 
+    'hotels',
 ]
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -46,6 +53,16 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# --- CONFIGURATION CLOUDINARY ---
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
+}
+
+# Indique à Django d'utiliser Cloudinary pour les médias
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 ROOT_URLCONF = 'core.urls'
 
@@ -66,7 +83,20 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
-# Database PostgreSQL
+# --- CONFIGURATION EMAIL SÉCURISÉE ---
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+
+if EMAIL_HOST_USER:
+    DEFAULT_FROM_EMAIL = f"Red Product <{EMAIL_HOST_USER}>"
+else:
+    DEFAULT_FROM_EMAIL = 'Red Product <noreply@redproduct.com>'
+
+# --- BASE DE DONNÉES POSTGRESQL ---
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -78,18 +108,23 @@ DATABASES = {
     }
 }
 
-# Django Rest Framework
+# --- DJANGO REST FRAMEWORK & JWT ---
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
+    ),
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated', # Par défaut, tout est protégé
+    ],
 }
 
-# Simple JWT
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': False,
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
     'AUTH_HEADER_TYPES': ('Bearer',),
     'USER_ID_FIELD': 'id',
     'USER_ID_CLAIM': 'user_id',
@@ -102,19 +137,6 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
-
-# --- CONFIGURATION EMAIL (BREVO) ---
-# Utilise 'django.core.mail.backends.console.EmailBackend' pour tester sans envoyer de vrais mails
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp-relay.brevo.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'a1556e001@smtp-brevo.com'
-
-# On récupère le mot de passe depuis le fichier .env
-EMAIL_HOST_PASSWORD = os.getenv('BREVO_SMTP_PASSWORD')
-
-DEFAULT_FROM_EMAIL = 'Red Product <noreply@redproduct.com>'
 
 # Internationalization
 LANGUAGE_CODE = 'en-us'
@@ -132,10 +154,16 @@ CORS_ALLOWED_ORIGINS = [
     "https://produit-frontend.vercel.app",
 ]
 
-# Backends d'authentification (Custom pour email/username)
+# CORS_ALLOW_ALL_ORIGINS = True
+
+# Backends d'authentification
 AUTHENTICATION_BACKENDS = [
     'accounts.backends.EmailBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
+
+# Static & Media files
+STATIC_URL = 'static/'
+MEDIA_URL = '/media/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

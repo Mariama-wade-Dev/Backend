@@ -5,11 +5,15 @@ from django.db.models import Q
 class EmailBackend(ModelBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
         try:
-            # On cherche l'utilisateur soit par son username, soit par son email
-            user = User.objects.get(Q(username=username) | Q(email=username))
-        except User.DoesNotExist:
+            # On utilise .filter().first() au lieu de .get() pour éviter le crash 
+            # si plusieurs utilisateurs ont été créés par erreur avec le même email.
+            user = User.objects.filter(Q(username=username) | Q(email=username)).first()
+            
+            if user is None:
+                return None
+                
+            if user.check_password(password):
+                return user
+        except Exception:
             return None
-        
-        if user.check_password(password):
-            return user
         return None
