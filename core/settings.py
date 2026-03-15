@@ -83,19 +83,19 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
-# --- CONFIGURATION EMAIL ---
-# Utilise SMTP si les variables sont présentes, sinon console
-if os.getenv('EMAIL_HOST_USER'):
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-else:
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
-EMAIL_HOST = 'smtp.gmail.com'
+# --- CONFIGURATION EMAIL SÉCURISÉE (BREVO) ---
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp-relay.brevo.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
+
+# Récupération sécurisée des variables depuis Render
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
-DEFAULT_FROM_EMAIL = f"Red Product <{EMAIL_HOST_USER}>" if EMAIL_HOST_USER else 'noreply@redproduct.com'
+
+# Sécurité anti-crash
+EMAIL_FAIL_SILENTLY = True 
+DEFAULT_FROM_EMAIL = f"BACKEND <{os.getenv('EMAIL_HOST_USER')}>"
 
 # --- BASE DE DONNÉES ---
 DATABASES = {
