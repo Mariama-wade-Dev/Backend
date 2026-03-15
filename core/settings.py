@@ -148,8 +148,8 @@ STATIC_URL = 'static/'
 # CORS Configuration
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+   "https://produit-frontend-ccgti7c4q-mariama-wade-devs-projects.vercel.app",
     "http://localhost:5173",
-    "https://produit-frontend.vercel.app",
 ]
 
 # CORS_ALLOW_ALL_ORIGINS = True
