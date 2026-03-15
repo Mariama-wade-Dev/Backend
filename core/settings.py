@@ -2,8 +2,9 @@ import os
 from pathlib import Path
 from datetime import timedelta
 from dotenv import load_dotenv
+import dj_database_url
 
-# Charger les variables d'environnement du fichier .env
+# Charger les variables d'environnement
 load_dotenv()
 
 # Build paths inside the project
@@ -13,21 +14,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure--%lwhhg#9)m78wpsyhn-e+m32vln34vwq#*8r5pxy$nhm$03%+')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = True # Garde True pour le moment pour voir les erreurs si besoin
 
-ALLOWED_HOSTS = ['backend-ui8w.onrender.com', '127.0.0.1', '.vercel.app', '.render.com']
+ALLOWED_HOSTS = ['backend-ui8w.onrender.com', '127.0.0.1', 'localhost', '.vercel.app', '.render.com']
 
 # Application definition
 INSTALLED_APPS = [
+    'cloudinary_storage', # Doit être avant staticfiles
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-   
-
-    #CLOUDINARY STORAGE 
-    'cloudinary_storage',
     'django.contrib.staticfiles',
     'cloudinary',
     
@@ -43,7 +41,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware', # EN PREMIER pour éviter les erreurs 401/CORS
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -54,14 +52,16 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# --- CONFIGURATION CORS (SOLUTION RADICALE POUR LE RENDU) ---
+CORS_ALLOW_ALL_ORIGINS = True  # Autorise toutes les connexions pour aujourd'hui
+CORS_ALLOW_CREDENTIALS = True
+
 # --- CONFIGURATION CLOUDINARY ---
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
     'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
     'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
 }
-
-# Indique à Django d'utiliser Cloudinary pour les médias
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 ROOT_URLCONF = 'core.urls'
@@ -83,36 +83,35 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
-# --- CONFIGURATION EMAIL SÉCURISÉE ---
-EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
-EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+# --- CONFIGURATION EMAIL ---
+# Utilise SMTP si les variables sont présentes, sinon console
+if os.getenv('EMAIL_HOST_USER'):
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = f"Red Product <{EMAIL_HOST_USER}>" if EMAIL_HOST_USER else 'noreply@redproduct.com'
 
-if EMAIL_HOST_USER:
-    DEFAULT_FROM_EMAIL = f"Red Product <{EMAIL_HOST_USER}>"
-else:
-    DEFAULT_FROM_EMAIL = 'Red Product <noreply@redproduct.com>'
-
-import dj_database_url
-
-# --- BASE DE DONNÉES (AUTO-CONFIGURÉE POUR RENDER) ---
+# --- BASE DE DONNÉES ---
 DATABASES = {
     'default': dj_database_url.config(
-        # Cette URL est utilisée uniquement si DATABASE_URL n'est pas trouvée (ton local)
         default='postgresql://postgres:admin@127.0.0.1:5432/red_product_db',
         conn_max_age=600
     )
 }
-# --- DJANGO REST FRAMEWORK & JWT ---
+
+# --- REST FRAMEWORK & JWT ---
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated', # Par défaut, tout est protégé
+        'rest_framework.permissions.IsAuthenticated',
     ],
 }
 
@@ -120,48 +119,26 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': True,
-    'BLACKLIST_AFTER_ROTATION': False,
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
     'AUTH_HEADER_TYPES': ('Bearer',),
-    'USER_ID_FIELD': 'id',
-    'USER_ID_CLAIM': 'user_id',
 }
 
-# Password validation
-AUTH_PASSWORD_VALIDATORS = [
-    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
-]
-
 # Internationalization
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'fr-fr' # Mis en Français pour ton projet
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# Static files
+# Static & Media files
 STATIC_URL = 'static/'
-
-# CORS Configuration
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-   "https://produit-frontend-ccgti7c4q-mariama-wade-devs-projects.vercel.app",
-    "http://localhost:5173",
-]
-
-# CORS_ALLOW_ALL_ORIGINS = True
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+MEDIA_URL = '/media/'
 
 # Backends d'authentification
 AUTHENTICATION_BACKENDS = [
     'accounts.backends.EmailBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
-
-# Static & Media files
-STATIC_URL = 'static/'
-MEDIA_URL = '/media/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
