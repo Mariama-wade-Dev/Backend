@@ -96,18 +96,16 @@ if EMAIL_HOST_USER:
 else:
     DEFAULT_FROM_EMAIL = 'Red Product <noreply@redproduct.com>'
 
-# --- BASE DE DONNÉES POSTGRESQL ---
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'red_product_db',
-        'USER': 'postgres',
-        'PASSWORD': 'admin', 
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
-    }
-}
+import dj_database_url
 
+# --- BASE DE DONNÉES (AUTO-CONFIGURÉE POUR RENDER) ---
+DATABASES = {
+    'default': dj_database_url.config(
+        # Cette URL est utilisée uniquement si DATABASE_URL n'est pas trouvée (ton local)
+        default='postgresql://postgres:admin@127.0.0.1:5432/red_product_db',
+        conn_max_age=600
+    )
+}
 # --- DJANGO REST FRAMEWORK & JWT ---
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
