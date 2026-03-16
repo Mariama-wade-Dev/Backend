@@ -7,5 +7,6 @@ urlpatterns = [
     # On remplace TokenObtainPairView par MyTokenObtainPairView
     path('login/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('password_reset/', include('django_rest_passwordreset.urls', namespace='password_reset')),
+    # Remplace la ligne password_reset par celle-ci :
+    path('forgot-password/', include('django_rest_passwordreset.urls', namespace='password_reset')),
 ]
