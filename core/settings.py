@@ -57,8 +57,8 @@ CORS_ALLOW_ALL_ORIGINS = True  # Autorise toutes les connexions pour aujourd'hui
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
-    "https://produit-frontend-git-mourma-mariama-wade-devs-projects.vercel.app",
-    "https://produit-frontend-mariama-wade-devs-projects.vercel.app",
+   
+    "https://produit-frontend.vercel.app",
     "http://localhost:3000",
 ]
 
