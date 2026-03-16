@@ -38,11 +38,10 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
     Utilisez le code suivant : {reset_password_token.key}
     Ou cliquez sur ce lien : {reset_url}
     """
-
-    send_mail(
-        "Réinitialisation de mot de passe - Red Product",
-        message,
-        settings.DEFAULT_FROM_EMAIL,
-        [reset_password_token.user.email],
-        fail_silently=True,  # <--- CHANGÉ : Si Brevo est lent, l'utilisateur voit quand même le message de succès
-    )
+send_mail(
+    "Réinitialisation de mot de passe - Red Product",
+    message,
+    settings.DEFAULT_FROM_EMAIL,
+    [reset_password_token.user.email],
+    fail_silently=False
+)
