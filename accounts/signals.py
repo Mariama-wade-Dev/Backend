@@ -38,6 +38,7 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
     Utilisez le code suivant : {reset_password_token.key}
     Ou cliquez sur ce lien : {reset_url}
     """
+    print("Email envoyé à :", reset_password_token.user.email)
 send_mail(
     "Réinitialisation de mot de passe - Red Product",
     message,

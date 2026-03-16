@@ -56,6 +56,11 @@ MIDDLEWARE = [
 CORS_ALLOW_ALL_ORIGINS = True  # Autorise toutes les connexions pour aujourd'hui
 CORS_ALLOW_CREDENTIALS = True
 
+CORS_ALLOWED_ORIGINS = [
+    "https://produit-frontend-git-mourma-mariama-wade-devs-projects.vercel.app/",
+    "http://localhost:3000",
+]
+
 # --- CONFIGURATION CLOUDINARY ---
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
@@ -119,7 +124,7 @@ SIMPLE_JWT = {
 }
 
 # Internationalization
-LANGUAGE_CODE = 'fr-fr' # Mis en Français pour ton projet
+LANGUAGE_CODE = 'fr-fr' 
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
@@ -135,6 +140,6 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-EMAIL_TIMEOUT = 5  # Si Brevo ne répond pas en 5s, on abandonne l'envoi du mail
+
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
