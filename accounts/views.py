@@ -17,20 +17,26 @@ class RegisterView(APIView):
     authentication_classes = []
 
     def post(self, request):
-        # On récupère les données envoyées par React
-        username = request.data.get('username')
         email = request.data.get('email')
         password = request.data.get('password')
 
-        # Sécurité : on vérifie que RIEN n'est vide avant de créer
-        if not username or not email or not password:
+        if not email or not password:
             return Response(
-                {"error": "Veuillez remplir tous les champs (username, email, password)"}, 
+                {"error": "Veuillez remplir tous les champs (email, password)"}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        if User.objects.filter(username=username).exists():
+        if User.objects.filter(username=email).exists():
             return Response({"error": "Cet utilisateur existe déjà"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.create_user(username=email, email=email, password=password)
+            return Response({
+                "message": "Utilisateur créé avec succès !",
+                "user": {"username": user.username, "email": user.email}
+            }, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         # Création sécurisée
         try:
